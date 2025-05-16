@@ -1,0 +1,10 @@
+name: NPlaytimeRewards
+version: '${project.version}'
+main: org.nojorundev.nplaytimerewards.NPlaytimeRewards
+api-version: '1.16'
+authors: [NoJoRunDev]
+description: Плагин для наград онлайн игроков
+commands:
+  nprewards:
+    description: Управление плагином
+    permission: nplaytimerewards.admin

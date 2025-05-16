@@ -1,0 +1,37 @@
+# Время для наград в секундах.
+time: 600
+
+help: |
+  &d/nprewards schedule &7- выдать награду рандомному игроку
+  &d/nprewards reload &7- перезагрузить конфиг плагина
+
+task-schedule: '&aNPlaytimeRewards &7• &aНаграда выдана!'
+
+reload-config: '&aNPlaytimeRewards &7• &aПлагин перезагружен!'
+
+rewards:
+  example-free-1:
+    # Если true то для получения награды игроку нужно иметь право.
+    permission-node: false
+
+    # Право чтобы получить награду.
+    permission: 'example.free.1'
+
+    # Команды наград.
+    commands:
+      - "give {player} diamond 1"
+      - "[MESSAGE_ALL] &eИгрок {player} получил награду:"
+      - "[MESSAGE_ALL] &bАлмаз"
+
+  example-premium-1:
+    # Если true то для получения награды игроку нужно иметь право.
+    permission-node: true
+
+    # Право чтобы получить награду.
+    permission: 'example.premium.1'
+
+    # Команды наград.
+    commands:
+      - "give {player} diamond 1"
+      - "[MESSAGE_ALL] &eИгрок {player} получил награду:"
+      - "[MESSAGE_ALL] &bАлмаз"
