@@ -19,7 +19,7 @@ public class NPlaytimeRewards extends JavaPlugin {
 
     @Override
     public void onEnable() {
-                                                                                                                                                                                                                                                                                             ();
+        saveDefaultConfig();
         loadConfig();
         random = new Random();
 
