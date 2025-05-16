@@ -19,7 +19,7 @@ public class NPlaytimeRewards extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
+                                                                                                                                                                                                                                                                                             ();
         loadConfig();
         random = new Random();
 
@@ -41,8 +41,9 @@ public class NPlaytimeRewards extends JavaPlugin {
             boolean permissionNode = getConfig().getBoolean(path + "permission-node", false);
             String permission = getConfig().getString(path + "permission", "");
             List<String> commands = getConfig().getStringList(path + "commands");
+            int minimumPlayers = getConfig().getInt(path + "minimum-players", 1);
 
-            rewards.add(new Reward(permissionNode, permission, commands));
+            rewards.add(new Reward(permissionNode, permission, commands, minimumPlayers));
         }
 
         taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(
@@ -57,34 +58,76 @@ public class NPlaytimeRewards extends JavaPlugin {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         if (onlinePlayers.isEmpty()) return;
 
-        List<Player> eligiblePlayers = new ArrayList<>(onlinePlayers);
-        Reward randomReward = rewards.get(random.nextInt(rewards.size()));
-
+        List<Reward> eligibleRewards = new ArrayList<>(rewards);
+        Reward randomReward = null;
         Player randomPlayer = null;
-        while (!eligiblePlayers.isEmpty()) {
-            randomPlayer = eligiblePlayers.get(random.nextInt(eligiblePlayers.size()));
 
-            if (!randomReward.permissionNode || randomPlayer.hasPermission(randomReward.permission)) {
+        while (!eligibleRewards.isEmpty()) {
+            randomReward = eligibleRewards.get(random.nextInt(eligibleRewards.size()));
+
+            if (onlinePlayers.size() < randomReward.getMinimumPlayers()) {
+                eligibleRewards.remove(randomReward);
+                continue;
+            }
+
+            List<Player> eligiblePlayers = new ArrayList<>(onlinePlayers);
+            while (!eligiblePlayers.isEmpty()) {
+                randomPlayer = eligiblePlayers.get(random.nextInt(eligiblePlayers.size()));
+
+                if (!randomReward.permissionNode || randomPlayer.hasPermission(randomReward.permission)) {
+                    break;
+                }
+
+                eligiblePlayers.remove(randomPlayer);
+                randomPlayer = null;
+            }
+
+            if (randomPlayer != null) {
                 break;
             }
 
-            eligiblePlayers.remove(randomPlayer);
-            randomPlayer = null;
+            eligibleRewards.remove(randomReward);
+            randomReward = null;
         }
 
-        if (randomPlayer == null) return;
+        if (randomReward == null || randomPlayer == null) {
+            return;
+        }
+
+        Integer randomCount = null;
 
         for (String command : randomReward.commands) {
-            if (command.startsWith("[MESSAGE_ALL]")) {
-                String message = command.substring("[MESSAGE_ALL]".length()).trim();
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    p.sendMessage(ChatColorUtil.color(message.replace("{player}", randomPlayer.getName())));
+            String processedCommand = command;
+
+            if (processedCommand.contains("[RANDOM-")) {
+                int startIndex = processedCommand.indexOf("[RANDOM-");
+                int endIndex = processedCommand.indexOf("]", startIndex);
+                if (endIndex != -1) {
+                    String randomPart = processedCommand.substring(startIndex + 8, endIndex);
+                    String[] parts = randomPart.split("-");
+                    if (parts.length == 2) {
+                        try {
+                            int min = Integer.parseInt(parts[0]);
+                            int max = Integer.parseInt(parts[1]);
+                            randomCount = new Random().nextInt(max - min + 1) + min;
+                            processedCommand = processedCommand.substring(0, startIndex) + randomCount + processedCommand.substring(endIndex + 1);
+                        } catch (NumberFormatException ignored) {}
+                    }
                 }
-            } else if (command.startsWith("[MESSAGE]")) {
-                String message = command.substring("[MESSAGE]".length()).trim();
-                randomPlayer.sendMessage(ChatColorUtil.color(message.replace("{player}", randomPlayer.getName())));
+            }
+
+            processedCommand = processedCommand.replace("{player}", randomPlayer.getName());
+            if (randomCount != null) {
+                processedCommand = processedCommand.replace("{count}", randomCount.toString());
+            }
+
+            if (processedCommand.startsWith("[MESSAGE_ALL]")) {
+                String message = processedCommand.substring("[MESSAGE_ALL]".length()).trim();
+                Bukkit.broadcastMessage(ChatColorUtil.color(message));
+            } else if (processedCommand.startsWith("[MESSAGE]")) {
+                String message = processedCommand.substring("[MESSAGE]".length()).trim();
+                randomPlayer.sendMessage(ChatColorUtil.color(message));
             } else {
-                String processedCommand = command.replace("{player}", randomPlayer.getName());
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
             }
         }
@@ -94,11 +137,17 @@ public class NPlaytimeRewards extends JavaPlugin {
         boolean permissionNode;
         String permission;
         List<String> commands;
+        int minimumPlayers;
 
-        Reward(boolean permissionNode, String permission, List<String> commands) {
+        Reward(boolean permissionNode, String permission, List<String> commands, int minimumPlayers) {
             this.permissionNode = permissionNode;
             this.permission = permission;
             this.commands = commands;
+            this.minimumPlayers = minimumPlayers;
+        }
+
+        public int getMinimumPlayers() {
+            return minimumPlayers;
         }
     }
 }

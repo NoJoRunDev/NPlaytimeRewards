@@ -11,6 +11,9 @@ reload-config: '&aNPlaytimeRewards &7• &aПлагин перезагружен
 
 rewards:
   example-free-1:
+    # Минимальное количество игроков чтобы награда выдалась.
+    minimum-players: 1
+
     # Если true то для получения награды игроку нужно иметь право.
     permission-node: false
 
@@ -24,6 +27,9 @@ rewards:
       - "[MESSAGE_ALL] &bАлмаз"
 
   example-premium-1:
+    # Минимальное количество игроков чтобы награда выдалась.
+    minimum-players: 1
+
     # Если true то для получения награды игроку нужно иметь право.
     permission-node: true
 
