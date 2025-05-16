@@ -9,6 +9,8 @@ task-schedule: '&aNPlaytimeRewards &7• &aНаграда выдана!'
 
 reload-config: '&aNPlaytimeRewards &7• &aПлагин перезагружен!'
 
+no-permission: '&cУ вас нет разрешения!'
+
 rewards:
   example-free-1:
     # Минимальное количество игроков чтобы награда выдалась.

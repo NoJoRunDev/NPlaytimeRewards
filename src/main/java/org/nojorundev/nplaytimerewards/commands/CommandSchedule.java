@@ -18,47 +18,57 @@ public class CommandSchedule implements CommandExecutor {
     public CommandSchedule(NPlaytimeRewards plugin) {
         this.plugin = plugin;
         plugin.getCommand("nprewards").setTabCompleter((sender, command, alias, args) -> {
-            if (sender.hasPermission("nplaytimerewards.admin")) {
-                List<String> completions = new ArrayList<>();
-                if (args.length == 1 && sender instanceof Player) {
-                    completions.add("schedule");
-                    completions.add("reload");
-                    completions.add("help");
-                }
-                return completions;
+            if (!sender.hasPermission("nplaytimerewards.admin")) {
+                return null;
             }
-            return null;
+            List<String> completions = new ArrayList<>();
+            if (args.length == 1 && sender instanceof Player) {
+                completions.add("schedule");
+                completions.add("reload");
+                completions.add("help");
+            }
+            return completions;
         });
     }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String alias, String[] args) {
-        if (commandSender.hasPermission("nplaytimerewards.admin")) {
-            switch (args[0].toLowerCase()) {
-                case "schedule":
-                    plugin.giveRandomReward();
-                    commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("task-schedule")));
-                    return true;
-                case "reload":
-                    plugin.reloadConfig();
-                    plugin.loadConfig();
-                    commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("reload-config")));
-                    return true;
-                case "help":
-                    SendHelp(commandSender);
-                    return false;
-                default:
-                    SendHelp(commandSender);
-                    return false;
-            }
+        if (!commandSender.hasPermission("nplaytimerewards.admin")) {
+            commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("no-permission")));
+            return false;
         }
-        return false;
+
+        if (args.length == 0) {
+            SendHelp(commandSender);
+            return false;
+        }
+
+        switch (args[0].toLowerCase()) {
+            case "schedule":
+                plugin.giveRandomReward();
+                commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("task-schedule")));
+                return true;
+            case "reload":
+                plugin.reloadConfig();
+                plugin.loadConfig();
+                commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("reload-config")));
+                return true;
+            case "help":
+                SendHelp(commandSender);
+                return true;
+            default:
+                SendHelp(commandSender);
+                return false;
+        }
     }
 
-    private void SendHelp(CommandSender commandSender) {
-        if (commandSender.hasPermission("nplaytimerewards.admin")) {
-            commandSender.sendMessage(ChatColorUtil.color("&d&lNPlaytimeRewards &7by &dNoJoRunDev&r"));
-            commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("help")));
+    private boolean SendHelp(CommandSender commandSender) {
+        if (!commandSender.hasPermission("nplaytimerewards.admin")) {
+            commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("no-permission")));
+            return false;
         }
+        commandSender.sendMessage(ChatColorUtil.color("&d&lNPlaytimeRewards &7by &dNoJoRunDev&r"));
+        commandSender.sendMessage(ChatColorUtil.color(plugin.getConfig().getString("help")));
+        return true;
     }
 }
